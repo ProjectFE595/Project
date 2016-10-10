@@ -8,7 +8,7 @@ from pymongo import MongoClient
 
 def ReloadStocks():
     client = MongoClient()
-    db = client.HistPrices
+    db = client.Project
     
     db.Stocks.delete_many({})
     db.Stocks.insert_many([{'QuandlID':'WIKI/FOXA','BBGTicker':'FOXA', 'Name' :'21ST CENTRY FOX A CM'}])
