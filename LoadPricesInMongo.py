@@ -33,7 +33,7 @@ def LoadPricesInMongo(today=''):
     for stock in quandlIDs:
         print(stock)
         if apiCall%19 == 0:
-            time.sleep(15*60) #sleep 15 min
+            #time.sleep(15*60) #sleep 15 min
         quandl.ApiConfig.api_key = "vXqo1CSCZ6a7eESaKXEu"
         apiCall = apiCall+1
         if today=='':
