@@ -12,7 +12,7 @@ from datetime import datetime, timedelta as td
 def GetDataSerieFromMongo(stock,startDate='',endDate=''):
    
     client = MongoClient()
-    db = client.Project
+    db = client.HistPrices
     
     if startDate=='' and endDate=='':
         data = list(db.HistPrices.find({'BBGTicker':stock})) 
