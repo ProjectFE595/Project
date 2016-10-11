@@ -15,7 +15,7 @@ from ReloadStocks import ReloadStocks
 def LoadPricesInMongo(today=''):
     
     client = MongoClient()
-    db = client.HistPrices
+    db = client.Project
     
     quandlIDs= []
     quandlIDDict = list(db.Stocks.find({},{"QuandlID":1,"BBGTicker":1,"Name":1,"_id":0}))
@@ -34,7 +34,6 @@ def LoadPricesInMongo(today=''):
         print(stock)
         if apiCall%19 == 0:
             time.sleep(15*60) #sleep 15 min
-            #testttttttttttt
         quandl.ApiConfig.api_key = "vXqo1CSCZ6a7eESaKXEu"
         apiCall = apiCall+1
         if today=='':
