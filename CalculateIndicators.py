@@ -36,8 +36,8 @@ def CalculateIndicators(startDate = '',endDate=''):
         if startDate=='' and endDate=='':
             data = GetDataSerieFromMongo(s) 
         else:
-            start = (datetime.strptime(startDate, '%Y-%m-%d') - td(days=90)).strftime('%Y-%m-%d')
-            data = GetDataSerieFromMongo(s,start,endDate)
+            d = (datetime.strptime(startDate, '%Y-%m-%d') - td(days=90)).strftime('%Y-%m-%d')
+            data = GetDataSerieFromMongo(s,d,endDate)
             
         header = data[0].tolist()
         

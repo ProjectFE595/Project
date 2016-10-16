@@ -12,7 +12,7 @@ from bson.json_util import loads
 import time
 from ReloadStocks import ReloadStocks
 
-def LoadPricesInMongo(apiKey,today=''):
+def LoadPricesInMongo(today=''):
     
     client = MongoClient()
     db = client.Project
@@ -25,19 +25,16 @@ def LoadPricesInMongo(apiKey,today=''):
                         quandlIDDict[i]['Name']])
         
     if today=='':
-        for s in quandlIDs:
-            db.HistPrices.delete_many({'BBGTicker':s[0]})
+        db.HistPrices.delete_many({})
     else:
-        for s in quandlIDs:
-            db.HistPrices.delete_many({'BBGTicker':s[0],'Date':str(today)})
-    
+        db.HistPrices.delete_many({'Date':str(today)})
     apiCall=1
     
     for stock in quandlIDs:
         print(stock)
         if apiCall%19 == 0:
             time.sleep(15*60) #sleep 15 min
-        quandl.ApiConfig.api_key = apiKey
+        quandl.ApiConfig.api_key = "vXqo1CSCZ6a7eESaKXEu"
         apiCall = apiCall+1
         if today=='':
             histPrice = quandl.get(stock[1])

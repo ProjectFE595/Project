@@ -1,0 +1,14 @@
+If you can't install La-Lib through pip directly,
+Try:
+
+1. Find La-Lib packege at http://www.lfd.uci.edu/~gohlke/pythonlibs/
+
+2. Download the correct version for your platform. 
+Because we are coding in Python 3.5, you shoud download
+TA_Lib-0.4.10-cp35-cp35m-win_amd64.whl   or
+TA_Lib-0.4.10-cp35-cp35m-win32.whl
+
+3. Put the whl file in your directory or set the directory to the location of your download (in shell run: cd your_path)
+
+4. In shell run:
+pip install SomePackage-1.0-py2.py3-none-any.whl
