@@ -69,11 +69,13 @@ def GetOptimalPortfolio(benchmark,apiKey,startDate,endDate,histWindow,rebalanceF
         h = (C * muP - B)/D * Vm1.dot(mu) + (A - B*muP)/D * Vm1.dot(i)  
         
         print(mu)
+        indexWeight=[]
         for item in stockView:
             i = stockView.index(item)
             j = stocks.index(item)    
             P[i][j] = 1        
             Q[i] = mu[j]+stockViewReturn[i]
+            indexWeight.append(j)
             print(Q[i])
             print(mu[j])
 
@@ -92,6 +94,16 @@ def GetOptimalPortfolio(benchmark,apiKey,startDate,endDate,histWindow,rebalanceF
         er, hBL, lmbda = altblacklitterman(delta, h, V, tau, P, Q, Omega)        
         htemp = numpy.reshape(hBL,(1,len(stocks)))
         hBL = htemp[0]
+        
+        summ=0
+        summ2=0
+        for ind in indexWeight:
+            summ+= hBL[ind]
+            summ2+= h[ind]
+            
+        for ind in indexWeight:
+            hBL[ind] = hBL[ind] * summ2/summ
+        
         if (k==rebalanceTotal):
             temp = df[k*rebalanceFreq+window:df.shape[0]-1].pct_change().dropna().dot(h)
             tempBL = df[k*rebalanceFreq+window:df.shape[0]-1].pct_change().dropna().dot(hBL)
