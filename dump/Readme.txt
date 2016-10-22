@@ -2,7 +2,11 @@ This is mongoDB backup (10/21/2016) for our project data. You can restore it in 
 
 Install MongoDB on your computer and run it on the standard port.
 
-Download the folder "dump" from the google drive link and put it into your directory so that you are in the parent directory of the dump directory.
+Download the folder "dump" from the google drive link https://drive.google.com/drive/folders/0B2uJgcioIsWPRkFjT0xxRy1RLWM?usp=sharing
+
+and put it into your directory so that you are in the parent directory of the dump directory.
+
+
 
 Now type:
 
