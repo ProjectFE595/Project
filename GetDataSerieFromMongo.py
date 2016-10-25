@@ -27,18 +27,13 @@ def GetDataSerieFromMongo(stock,startDate='',endDate=''):
             
         data = list(db.HistPrices.find({'Date':{"$in":dateList},'BBGTicker':stock})) 
     
-    headers= ['BBGTicker','Close','Date','High','Low','Name','Open','Volume','_id']    
+    headers= list(data[0].keys())   
     records=[]
     records.append(headers)
     for i in range(len(data)):
-        records.append([data[i]['BBGTicker'],
-                        data[i]['Close'],
-                        data[i]['Date'],
-                        data[i]['High'],
-                        data[i]['Low'],
-                        data[i]['Name'],
-                        data[i]['Open'],
-                        data[i]['Volume'],
-                        data[i]['_id']])
+        row=[]
+        for h in headers:
+            row.append(data[i][h])
+        records.append(row)
         
     return numpy.asarray(records)

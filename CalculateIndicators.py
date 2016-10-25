@@ -39,8 +39,17 @@ def CalculateIndicators(startDate = '',endDate=''):
             start = (datetime.strptime(startDate, '%Y-%m-%d') - td(days=90)).strftime('%Y-%m-%d')
             data = GetDataSerieFromMongo(s,start,endDate)
             
-        header = data[0].tolist()
-        
+        indexClose = numpy.where(data[0]=='Close')[0][0]
+        indexOpen = numpy.where(data[0]=='Open')[0][0]
+        indexLow = numpy.where(data[0]=='Open')[0][0]
+        indexHigh = numpy.where(data[0]=='Open')[0][0]
+
+        data = data[data[:,indexClose]!=0,:] #Remove 0 prices
+        data = data[data[:,indexOpen]!=0,:] #Remove 0 prices
+        data = data[data[:,indexLow]!=0,:] #Remove 0 prices
+        data = data[data[:,indexHigh]!=0,:] #Remove 0 prices
+ 
+        header = data[0].tolist()        
         header.append('SMA')
         header.append('EMA')
         header.append('KAMA')
@@ -55,7 +64,8 @@ def CalculateIndicators(startDate = '',endDate=''):
         header.append('ADOSCILLATOR')
         header.append('ATR')
         header.append('OBV')
-        header.append('STOCH')
+        header.append('STOCHSLOWK')
+        header.append('STOCHSLOWD')
         header.append('MOM')
         header.append('ROC')
         header.append('BOLLINGERUPPER')
@@ -63,14 +73,17 @@ def CalculateIndicators(startDate = '',endDate=''):
         header.append('BOLLINGERLOWER')
         header.append('HILBERTTRENDLINE')
         header.append('WILLIAMR')
+        header.append('RETURN')
+        header.append('RETURNCLASSIFICATION')
+        
         
         if len(data)>1:
             
-            closeP = numpy.array(data[1:,1], dtype='f8')
+            closeP = numpy.array(data[1:,numpy.where(data[0]=='Close')[0][0]], dtype='f8')
             #openP = numpy.array(data[1:,6], dtype='f8')
-            highP = numpy.array(data[1:,3], dtype='f8')
-            lowP = numpy.array(data[1:,4], dtype='f8')
-            volume = numpy.array(data[1:,7], dtype='f8')    
+            highP = numpy.array(data[1:,numpy.where(data[0]=='High')[0][0]], dtype='f8')
+            lowP = numpy.array(data[1:,numpy.where(data[0]=='Low')[0][0]], dtype='f8')
+            volume = numpy.array(data[1:,numpy.where(data[0]=='Volume')[0][0]], dtype='f8')    
             
             sma = talib.SMA(closeP,timeperiod=14)
             ema = talib.EMA(closeP,timeperiod=30)
@@ -90,9 +103,88 @@ def CalculateIndicators(startDate = '',endDate=''):
             upperBB, middleBB, lowerBB = talib.BBANDS(closeP, matype=MA_Type.T3)
             hilbertTL = talib.HT_TRENDLINE(closeP)
             williamR = talib.WILLR(highP,lowP,closeP,timeperiod=14)
+
+            returnClose = numpy.diff(closeP.astype(float), axis=0)/closeP[:-1].astype(float)
+            returnClose = numpy.insert(returnClose,0,0)
+            where_are_NaNs = numpy.isnan(returnClose)
+            returnClose[where_are_NaNs] = 0
             
-            res = numpy.c_[data[1:,:],sma,ema,kama,adx,rsi,cci,macd,signal,hist,mfi,ad,adOscillator,atr,
-                           obv,slowk,slowd,mom,roc,upperBB,middleBB,lowerBB,hilbertTL,williamR]
+            returnClassification = numpy.empty([returnClose.size],dtype="S20")
+
+            for i in range(returnClose.size):
+                
+                if returnClose[i]<-0.5:
+                    returnClassification[i]='[,-0.5]'
+                if -0.5<= returnClose[i] < -0.45 :
+                    returnClassification[i]='[-0.5,-0.45]'
+                if -0.45<= returnClose[i] < -0.40 :
+                    returnClassification[i]='[-0.45,-0.40]'
+                if -0.4<= returnClose[i] < -0.35 :
+                    returnClassification[i]='[-0.40,-0.35]'
+                if -0.35<= returnClose[i] < -0.3 :
+                    returnClassification[i]='[-0.35,-0.30]'
+                if -0.3<= returnClose[i] < -0.25 :
+                    returnClassification[i]='[-0.30,-0.25]'
+                if -0.25<= returnClose[i] < -0.20 :
+                    returnClassification[i]='[-0.25,-0.20]'
+                if -0.2<= returnClose[i] < -0.15 :
+                    returnClassification[i]='[-0.20,-0.15]'
+                if -0.15<= returnClose[i] < -0.10 :
+                    returnClassification[i]='[-0.15,-0.10]'
+                if -0.1<= returnClose[i] < -0.05 :
+                    returnClassification[i]='[-0.10,-0.05]'
+                if -0.05<= returnClose[i] < 0 :
+                    returnClassification[i]='[-0.05,0]'
+                if 0<= returnClose[i] < 0.05 :
+                    returnClassification[i]='[0,0.05]'
+                if 0.05<= returnClose[i] < 0.1 :
+                    returnClassification[i]='[0.05,0.1]'
+                if 0.1<= returnClose[i] < 0.15 :
+                    returnClassification[i]='[0.1,0.15]'
+                if 0.15<= returnClose[i] < 0.2 :
+                    returnClassification[i]='[0.15,0.2]'
+                if 0.2<= returnClose[i] < 0.25 :
+                    returnClassification[i]='[0.2,0.25]'
+                if 0.25<= returnClose[i] < 0.3 :
+                    returnClassification[i]='[0.25,0.30]'
+                if 0.3<= returnClose[i] < 0.35 :
+                    returnClassification[i]='[0.30,0.35]'
+                if 0.35<= returnClose[i] < 0.4 :
+                    returnClassification[i]='[0.35,0.40]'
+                if 0.4<= returnClose[i] < 0.45 :
+                    returnClassification[i]='[0.40,0.45]'
+                if 0.45<= returnClose[i] < 0.5 :
+                    returnClassification[i]='[0.45,0.50]'
+                if 0.5<= returnClose[i] :
+                    returnClassification[i]='[0.5,]'
+            
+            res = numpy.c_[data[1:,:],
+                           sma,
+                           ema,
+                           kama,
+                           adx,
+                           rsi,
+                           cci,
+                           macd,
+                           signal,
+                           hist,
+                           mfi,
+                           ad,
+                           adOscillator,
+                           atr,
+                           obv,
+                           slowk,
+                           slowd,
+                           mom,
+                           roc,
+                           upperBB,
+                           middleBB,
+                           lowerBB,
+                           hilbertTL,
+                           williamR,
+                           returnClose,
+                           returnClassification]
+
             
             records = res.tolist()
             
