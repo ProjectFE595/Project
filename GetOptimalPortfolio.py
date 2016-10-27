@@ -28,12 +28,16 @@ def GetOptimalPortfolio(benchmark,apiKey,startDate,endDate,window,rebalanceFrequ
     dfHeaders = ['Dummy']
     
     for stock in stocks:
-        dfHeaders.append(stock)
-        s = GetDataSerieFromMongo(stock,startDate,endDate) 
-        indexDate= numpy.where(s[0]=='Date')[0][0]
-        indexClose = numpy.where(s[0]=='Close')[0][0]
-        s[0,indexClose] = stock+' Close'
-        tempdf = pandas.DataFrame(s[:,[indexClose]],index=s[:,indexDate])
+        dfHeaders.append(stock+' Close')
+        data = GetDataSerieFromMongo(stock,startDate,endDate) 
+        headers = data[0]
+        temp = data[1:]
+        indexClose=headers.index('Close')
+        indexDate=headers.index('Date')
+        s = [stock+' Close']
+        s.append(temp[indexClose])
+        s.append(temp[indexDate])
+        tempdf = pandas.DataFrame(s[1],index=s[2])
         df = pandas.concat([df, tempdf], axis=1,join='outer')
             
     df.columns = dfHeaders
@@ -74,7 +78,7 @@ def GetOptimalPortfolio(benchmark,apiKey,startDate,endDate,window,rebalanceFrequ
         print(h)
         print(sum(h))
         # Solve for optimal portfolio weights
-        bnds = ((0.0005,1),)*m
+        bnds = ((0.00005,1),)*m
         cons = ({'type': 'eq', 'fun': lambda x:  numpy.sum(x)-1.0},
                 {'type': 'eq', 'fun': lambda x:  numpy.sum(x*mu)-muP})
         h0 = numpy.ones(m)
