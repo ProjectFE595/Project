@@ -140,6 +140,9 @@ def GetReturnPredictions(s,date,horizon):
     pipe_lr.fit(Xtrain,Ytrain)
     Ypred = pipe_lr.predict(Xpred)
     proba = pipe_lr.predict_proba(Xpred)
+    print(s)
+    print(Ypred)
+    print(proba)
     proba = proba[0][Ypred[0]]
     interval = class_le.inverse_transform(Ypred)[0].decode()
     lowReturn = float(interval[1+interval.index('['):interval.index(',')])

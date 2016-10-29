@@ -22,13 +22,23 @@ today = '2016-09-29'
 quandlKey="vXqo1CSCZ6a7eESaKXEu"
 benchmark='NASDAQOMX/NDX'
 #LoadPricesInMongo(apiKey=quandlKey,today)
-LoadPricesInMongo(apiKey=quandlKey)
+#LoadPricesInMongo(apiKey=quandlKey)
 CalculateIndicators()
 
 ErYHOO,pYHOO,meanScores,stdScores = GetReturnPredictions('YHOO','2010-02-05',20)
 ErCSCO,pCSCO,meanScores,stdScores = GetReturnPredictions('CSCO','2010-02-05',20)
 ErAAPL,pAAPL,meanScores,stdScores = GetReturnPredictions('AAPL','2010-02-05',20)
 ErGOOGL,pGOOGL,meanScores,stdScores = GetReturnPredictions('GOOGL','2010-02-05',20)
+
+print(ErYHOO)
+print(ErCSCO)
+print(ErAAPL)
+print(ErGOOGL)
+
+print(pYHOO)
+print(pCSCO)
+print(pAAPL)
+print(pGOOGL)
 
 startDate='2010-02-05'
 endDate='2013-10-30'
@@ -37,7 +47,7 @@ rebalanceFrequency=2500
 
 stockView = ['YHOO','CSCO','AAPL','GOOGL']
 #stockViewReturn = [-0.055,0.05,0.06,0.1]
-#stockConfidence = [0.9,0.8,0.5,0.8]
+#stockConfidence = [0.6,0.8,0.5,0.4]
 stockViewReturn = [ErYHOO,ErCSCO,ErAAPL,ErGOOGL]
 stockConfidence = [pYHOO,pCSCO,pAAPL,pGOOGL]
 
@@ -48,8 +58,16 @@ benchmarkValue = GetBenchmarkPortfolio(benchmark,quandlKey,startDate,endDate)
 # Risk aversion of the market 
 delta = (252*numpy.mean(benchmarkValue.pct_change().dropna())-rf)/(math.sqrt(252)*numpy.std(benchmarkValue.pct_change().dropna()))
 delta = delta[0]
-portValue,portBLValue,h,hBL = GetOptimalPortfolio(benchmark,quandlKey,startDate,endDate,histWindow,rebalanceFrequency,
-                                                  tau,stockView,stockViewReturn,stockConfidence,delta)
+portValue,portBLValue,h,hBL = GetOptimalPortfolio(benchmark,
+                                                  startDate,
+                                                  endDate,
+                                                  histWindow,
+                                                  rebalanceFrequency,
+                                                  tau,
+                                                  stockView,
+                                                  stockViewReturn,
+                                                  stockConfidence,
+                                                  delta)
 
 
 portValue.columns = ['OptimalPort']

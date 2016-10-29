@@ -15,7 +15,7 @@ from GetDataSerieFromMongo import GetDataSerieFromMongo
 from BlackLitterman import bl_omega
 from BlackLitterman import altblacklitterman
 
-def GetOptimalPortfolio(benchmark,apiKey,startDate,endDate,window,rebalanceFrequency,
+def GetOptimalPortfolio(benchmark,startDate,endDate,window,rebalanceFrequency,
                         tau,stockView,stockViewReturn,stockConfidence,delta):
     
     client = MongoClient()
@@ -66,27 +66,18 @@ def GetOptimalPortfolio(benchmark,apiKey,startDate,endDate,window,rebalanceFrequ
 
     for k in range(rebalanceTotal+1):
         V = 252*numpy.cov(s[k*rebalanceFreq:k*rebalanceFreq+window].T)    
-        Vm1 = inv(V)
         mu = 252*numpy.mean(s[k*rebalanceFreq:k*rebalanceFreq+window],axis=0)
         muP = numpy.mean(mu)
-        A = numpy.transpose(mu).dot(Vm1.dot(mu))
-        B = numpy.transpose(mu).dot(Vm1.dot(i))
-        C = numpy.transpose(i).dot(Vm1.dot(i))
-        D = A*C-B*B
 
-        h = (C * muP - B)/D * Vm1.dot(mu) + (A - B*muP)/D * Vm1.dot(i)  
-        print(h)
-        print(sum(h))
         # Solve for optimal portfolio weights
-        bnds = ((0.00005,1),)*m
+        bnds = ((0.005,1),)*m
         cons = ({'type': 'eq', 'fun': lambda x:  numpy.sum(x)-1.0},
                 {'type': 'eq', 'fun': lambda x:  numpy.sum(x*mu)-muP})
         h0 = numpy.ones(m)
         res= minimize(variance, h0, args=(V,)
                                     ,method='SLSQP',constraints=cons,bounds=bnds)
         h=res.x        
-        print(h)
-        print(sum(h))
+        #print(h)
         indexh=[]
         for item in stockView:
             i = stockView.index(item)
