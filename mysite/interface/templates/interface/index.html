@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'interface/style.css' %}" />
+    <script src="{% static 'interface/checkbox.js' %}"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/resources/demos/style.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script type="text/javascript">
+	$( function() {
+		$( "#datepicker1" ).datepicker();
+		$( "#datepicker2" ).datepicker();
+
+	} );
+	$(document).ready(function() {
+    $('#btnSave').click(function() {
+        addExpRtr($('#txtName').val());
+    });
+	});
+
+	function addExpRtr(ticker) {
+		var container = $('#addstock');
+		var inputs = container.find('input');
+		var id = inputs.length+1;
+		//$('<p>'+ 'ticker'+ ':').appendTo(container);
+		$('<label />', { 'for': 'ticker'+id, text: ticker+':' }).appendTo(container);
+		$('<input />', { type: 'number', id: 'ticker'+id, name: ticker, step:0.01, value: 0}).appendTo(container);
+		$('<p/>').appendTo(container);
+	}
+    </script>
+</head>
+<body>
+    <noscript>Sorry, your browser does not support JavaScript!</noscript>
+	
+	
+    <div id="div1">
+	<h1 align = "center">Hello users!</h1>
+	<table style="width:100%">
+		<form action="../plot/" method="post">
+			{% csrf_token %}
+        <tr>
+		
+		<td>
+		<fieldset>
+			<legend>Input basic parameters</legend>             
+            <p>Start Date: <input type="text" name="startDate" id="datepicker1" value="02/05/2010"></p>
+            <p>End Date: <input type="text" name="endDate" id="datepicker2" value="10/30/2013"></p>
+            <p>Historical Window: <input type="number" name="histWindow" min="20" max="50000" value="120"></p>
+            <p>Rebalance Frequency: <input type="number" name="rebalanceFrequency" min="100" max="2500" value="1500"></p>
+            <p>Future Horizon: <input type="number" name="futureHorizon" min="2" max="30" value="20"></p>
+			<p>rf(%): <input type="number" name="rf" min="-0.1" max="0.99" step="0.01" value="0.01"></p>
+            <p>tau: <input type="number" name="tau" min="0" max="0.99" step="0.001" value="0.025"></p>     
+		</fieldset>
+		</td>
+		<td>
+		<fieldset id="addstock">
+			<legend>Input your personal view on returns</legend> 
+			<input type="text" id="txtName" />
+			<input type="button" value="Add Stock" id="btnSave" class="button0"/>						
+				<p>YHOO: <input type="number" name="YHOO" step="0.01" value="0"></p>
+				<p>CSCO: <input type="number" name="CSCO" step="0.01" value="0"></p>
+				<p>AAPL: <input type="number" name="AAPL" step="0.01" value="0"></p>
+				<p>GOOGL: <input type="number" name="GOOGL" step="0.01" value="0"></p>			
+		</fieldset>	
+			
+		</td>
+		</tr>
+		<tr >
+		<td colspan="2" align = "center">
+			<br>
+            <p><input type="reset" class="button">   <input type="submit" value="Submit" class="button"/></p>
+        
+		</td>			
+		</tr>
+		</form>
+    </div>
+
+
+</body>
+</html>

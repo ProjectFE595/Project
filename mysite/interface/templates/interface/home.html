@@ -1,0 +1,77 @@
+<head>
+	<title>Home</title>	
+	{% load static %}
+	<link rel="stylesheet" type="text/css" href="{% static 'interface/checkbox.css' %}" />
+	<script src="{% static 'interface/checkbox.js' %}"></script>
+	
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<link rel="stylesheet" href="/resources/demos/style.css">
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<script>
+	$( function() {
+		$( "#datepicker1" ).datepicker();
+		$( "#datepicker2" ).datepicker();		
+	} );
+	$(document).ready(function(){
+   var $form = $('form');
+   $form.submit(function(){
+      $.post($(this).attr('action'), $(this).serialize(), function(response){
+            // do something here on success
+      },'json');
+      return false;
+   });
+});
+	</script>
+</head>
+
+<body>
+<noscript>Sorry, your browser does not support JavaScript!</noscript>
+<script>
+document.write("Hello World!");
+</script>
+<form action="/plot/" method="post">
+
+	<p>Start Date: <input type="text" name="timeSpan" id="datepicker1" value="2010-02-05"></p>
+	<p>End Date: <input type="text" name="timeSpan" id="datepicker2" value="2013-10-30"></p>
+	<p>Historical Window: <input type="number" name="histWindow" min="50" max="300" value="120"></p>
+	<p>Rebalance Frequency: <input type="number" name="rebalanceFrequenc" min="50" max="2500" value="1500"></p>
+	<p>rf: <input type="number" name="rf" min="0" max="0.99" step="0.0001" value="0.0001"></p>
+	<p>tau: <input type="number" name="tau" min="0" max="0.99" step="0.001" value="0.025"></p>
+    {% csrf_token %}
+    <input type="checkbox" name="checkbox-option" id="checkbox-button-opt-one" class="hide-checkbox" value="Option 1"  style="display:none" checked>
+	<label for="checkbox-button-opt-one">YHOO</label>
+ 
+	<input type="checkbox" name="checkbox-option" id="checkbox-button-opt-two" class="hide-checkbox" value="Option 2" style="display:none" checked>
+	<label for="checkbox-button-opt-two">CSCO</label>
+ 
+	<input type="checkbox" name="checkbox-option" id="checkbox-button-opt-three" class="hide-checkbox" value="Option 3" style="display:none" checked>
+	<label for="checkbox-button-opt-three">APPL</label>
+	
+	<input type="checkbox" name="checkbox-option" id="checkbox-button-opt-four" class="hide-checkbox" value="Option 4" style="display:none" checked>
+	<label for="checkbox-button-opt-four">GOOGL</label>
+	
+    <input type="submit" name="checkbox-option" value="Submit" />
+</form>
+
+
+<div id="A1">
+{% if latest_question_list %}
+    <ul>
+    {% for question in latest_question_list %}
+        <li><a href="/polls/{{ question.id }}/">{{ question.question_text }}</a></li>
+		<li><a href="{% url 'interface:detail' question.id %}">{{ question.question_text }}</a></li>
+		<li>since you defined the name argument in the url() functions in the .urls module</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}
+<iframe width="600" height="500" src="/plot/" allowfullscreen></iframe>
+</div>
+
+</body>
+
+
+
+
