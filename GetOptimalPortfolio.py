@@ -6,6 +6,8 @@ Created on Sat Oct 15 14:00:23 2016
 """
 import numpy
 import math
+import scipy
+from scipy.optimize import minimize
 from numpy.linalg import inv
 import pandas
 from pymongo import MongoClient
@@ -13,8 +15,8 @@ from GetDataSerieFromMongo import GetDataSerieFromMongo
 from BlackLitterman import bl_omega
 from BlackLitterman import altblacklitterman
 
-def GetOptimalPortfolio(benchmark,apiKey,startDate,endDate,histWindow,rebalanceFrequency,
-                        tau,stockView,stockViewReturn,stockConfidence):
+def GetOptimalPortfolio(benchmark,startDate,endDate,window,rebalanceFrequency,
+                        tau,stockView,stockViewReturn,stockConfidence,delta):
     
     client = MongoClient()
     db = client.Project
@@ -26,70 +28,72 @@ def GetOptimalPortfolio(benchmark,apiKey,startDate,endDate,histWindow,rebalanceF
     dfHeaders = ['Dummy']
     
     for stock in stocks:
-        dfHeaders.append(stock)
-        s = GetDataSerieFromMongo(stock,startDate,endDate)   
-        s[0,1] = stock+' Close'
-        tempdf = pandas.DataFrame(s[:,[1]],index=s[:,2])
+        dfHeaders.append(stock+' Close')
+        data = GetDataSerieFromMongo(stock,startDate,endDate) 
+        headers = data[0]
+        temp = data[1:]
+        indexClose=headers.index('Close')
+        indexDate=headers.index('Date')
+        s = [stock+' Close']
+        s.append(temp[indexClose])
+        s.append(temp[indexDate])
+        tempdf = pandas.DataFrame(s[1],index=s[2])
         df = pandas.concat([df, tempdf], axis=1,join='outer')
             
     df.columns = dfHeaders
     df = df.drop('Dummy',1)
     df = df.sort_index()
-    df.to_csv('test.csv', sep=',', encoding='utf-8')
     
     s = df.as_matrix()
     s = s[:len(s)-1,:]
     s = numpy.diff(s.astype(float), axis=0)/s[:-1].astype(float)
     s = s[~numpy.isnan(s).any(axis=1)]
+    s = s[numpy.all(numpy.abs(s) < 1, axis=1)]
+    #numpy.savetxt('test.csv', X=s, delimiter=',')
 
-    window=histWindow
-    rebalanceFreq=min(s.shape[0],rebalanceFrequency)
-    rebalanceTotal = math.floor((s.shape[0] - s.shape[0]%rebalanceFreq-window)/rebalanceFreq)
-    i=numpy.ones(s.shape[1])
-    rf=0.00001
+    n=s.shape[0]
+    m=s.shape[1]
+    v=len(stockView)
+    rebalanceFreq=min(n,rebalanceFrequency)
+    rebalanceTotal = math.floor((n - n%rebalanceFreq-window)/rebalanceFreq)
+    i=numpy.ones(m)
 
-    P = numpy.zeros((len(stockView),len(stocks)))
-    Q = numpy.zeros((len(stockView),1))
-    
-
-   
+    P = numpy.zeros((v,m))
+    Q = numpy.zeros((v,1))
+     
     portValue=[]
     portBLValue=[]
 
     for k in range(rebalanceTotal+1):
         V = 252*numpy.cov(s[k*rebalanceFreq:k*rebalanceFreq+window].T)    
-        Vm1 = inv(V)
         mu = 252*numpy.mean(s[k*rebalanceFreq:k*rebalanceFreq+window],axis=0)
         muP = numpy.mean(mu)
-        A = numpy.transpose(mu).dot(Vm1.dot(mu))
-        B = numpy.transpose(mu).dot(Vm1.dot(i))
-        C = numpy.transpose(i).dot(Vm1.dot(i))
-        D = A*C-B*B
 
-        h = (C * muP - B)/D * Vm1.dot(mu) + (A - B*muP)/D * Vm1.dot(i)  
-        
-        print(mu)
-        indexWeight=[]
+        # Solve for optimal portfolio weights
+        bnds = ((0.005,1),)*m
+        cons = ({'type': 'eq', 'fun': lambda x:  numpy.sum(x)-1.0},
+                {'type': 'eq', 'fun': lambda x:  numpy.sum(x*mu)-muP})
+        h0 = numpy.ones(m)
+        res= minimize(variance, h0, args=(V,)
+                                    ,method='SLSQP',constraints=cons,bounds=bnds)
+        h=res.x        
+        #print(h)
+        indexh=[]
         for item in stockView:
             i = stockView.index(item)
             j = stocks.index(item)    
             P[i][j] = 1        
             Q[i] = mu[j]+stockViewReturn[i]
-            indexWeight.append(j)
-            print(Q[i])
-            print(mu[j])
-
-        # Risk aversion of the market 
-        delta = 3.07       
+            indexh.append(j)
+              
         # Coefficient of uncertainty in the prior estimate of the mean
         # from footnote (8) on page 11               
         tauV = tau * V
         
-        Omega = numpy.zeros((len(stockConfidence),len(stockConfidence)))
-        for c in range(len(stockConfidence)):
+        Omega = numpy.zeros((v,v))
+        for c in range(v):
             Omega[c][c] = bl_omega(stockConfidence[c], P[c], tauV)
             
-        print(Omega)
         #Omega = numpy.dot(numpy.dot(P,tauV),P.T)
         er, hBL, lmbda = altblacklitterman(delta, h, V, tau, P, Q, Omega)        
         htemp = numpy.reshape(hBL,(1,len(stocks)))
@@ -97,11 +101,11 @@ def GetOptimalPortfolio(benchmark,apiKey,startDate,endDate,histWindow,rebalanceF
         
         summ=0
         summ2=0
-        for ind in indexWeight:
+        for ind in indexh:
             summ+= hBL[ind]
             summ2+= h[ind]
             
-        for ind in indexWeight:
+        for ind in indexh:
             hBL[ind] = hBL[ind] * summ2/summ
         
         if (k==rebalanceTotal):
@@ -127,6 +131,7 @@ def GetOptimalPortfolio(benchmark,apiKey,startDate,endDate,histWindow,rebalanceF
             portValue[0][r+1]=0
         portValue[0][r+1]=portValue[0][r]*(1+portValue[0][r+1])
     
+    
     tempBL = portBLValue[0]
     for p in range(len(portBLValue)-1):
         tempBL = pandas.concat([pandas.DataFrame(tempBL),pandas.DataFrame(portBLValue[p+1])],axis=0)
@@ -139,8 +144,9 @@ def GetOptimalPortfolio(benchmark,apiKey,startDate,endDate,histWindow,rebalanceF
         if (abs(portBLValue[0][r+1])>1):
             portBLValue[0][r+1]=0
         portBLValue[0][r+1]=portBLValue[0][r]*(1+portBLValue[0][r+1])
-        
-        
+    
     return portValue,portBLValue, h , hBL
     
+def variance(x,Sig):
     
+    return numpy.dot(x,numpy.dot(Sig,x))

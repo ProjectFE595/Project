@@ -1,0 +1,17 @@
+This is mongoDB backup (10/21/2016) for our project data. You can restore it in your mongo database so you needn't to download the data from quandl (which takes a lot of time)
+
+Install MongoDB on your computer and run it on the standard port.
+
+Download the "dump.zip" from the google drive link https://drive.google.com/drive/folders/0B2uJgcioIsWPRkFjT0xxRy1RLWM?usp=sharing
+
+Uncompress and put it into your current directory so that you are in the parent directory of the dump directory.
+
+Now type:
+
+mongorestore dump
+
+You will restore the project data to your local mongo database.
+
+
+Yun Chen
+
