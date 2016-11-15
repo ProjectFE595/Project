@@ -2,35 +2,47 @@
 """
 Created on Wed Sep 14 23:03:57 2016
 
-@author: Hugo
+@author: Hugo Fallourd, Dakota Wixom, Yun Chen, Sanket Sojitra, Sanjana Cheerla, Wanting Mao, Chay Pimmanrojnagool, Teng Fei
+
 """
 
 import datetime
-from LoadPricesInMongo import LoadPricesInMongo
-from CalculateIndicators import CalculateIndicators
-from GetOptimalPortfolio import GetOptimalPortfolio
+from PricesLoading import PricesLoading
+from Indicators import Indicators
+from Portfolios import Portfolios
+from Predictor import Predictor
 import matplotlib.pyplot as plt
 import pandas
 import numpy
 import math
-from GetBenchmarkPortfolio import GetBenchmarkPortfolio
-from GetAnalyticsFromMongo import GetAnalyticsFromMongo
-from GetReturnPredictions import GetReturnPredictions
+from PortfolioAnalysis import PortfolioAnalysis
 
 today = datetime.date.today()
 today = '2016-09-29'
 quandlKey="vXqo1CSCZ6a7eESaKXEu"
 benchmark='NASDAQOMX/NDX'
-#LoadPricesInMongo(apiKey=quandlKey,today)
-#LoadPricesInMongo(apiKey=quandlKey)
-CalculateIndicators()
 
-ErYHOO,pYHOO,meanScores,stdScores = GetReturnPredictions('YHOO','2010-02-05',20)
-ErCSCO,pCSCO,meanScores,stdScores = GetReturnPredictions('CSCO','2010-02-05',20)
-ErAAPL,pAAPL,meanScores,stdScores = GetReturnPredictions('AAPL','2010-02-05',20)
-ErGOOGL,pGOOGL,meanScores,stdScores = GetReturnPredictions('GOOGL','2010-02-05',20)
+p=PricesLoading(quandlKey)
+#p.LoadPricesInMongo()
+i = Indicators()
+#i.CalculateIndicators()
 
-print(ErYHOO)
+date='2010-02-05'
+horizon=20
+
+TIs=['KAMA','MACDHIST','CCI','RSI','WILLIAMR','MFI','EMA','ROC','STOCHSLOWD','ADX']
+
+prY = Predictor('YHOO',date,horizon,TIs)
+prC = Predictor('CSCO',date,horizon,TIs)
+prA = Predictor('AAPL',date,horizon,TIs)
+prG = Predictor('GOOGL',date,horizon,TIs)
+
+ErYHOO,pYHOO = prY.GetReturnPredictions()
+ErCSCO,pCSCO = prC.GetReturnPredictions()
+ErAAPL,pAAPL = prA.GetReturnPredictions()
+ErGOOGL,pGOOGL = prG.GetReturnPredictions()
+
+print(ErYHOO) 
 print(ErCSCO)
 print(ErAAPL)
 print(ErGOOGL)
@@ -41,34 +53,29 @@ print(pAAPL)
 print(pGOOGL)
 
 startDate='2010-02-05'
-endDate='2013-10-30'
+endDate='2015-10-30'
 histWindow=120
-rebalanceFrequency=2500
+rebalanceFrequency=500
 
 stockView = ['YHOO','CSCO','AAPL','GOOGL']
-#stockViewReturn = [-0.055,0.05,0.06,0.1]
-#stockConfidence = [0.6,0.8,0.5,0.4]
 stockViewReturn = [ErYHOO,ErCSCO,ErAAPL,ErGOOGL]
 stockConfidence = [pYHOO,pCSCO,pAAPL,pGOOGL]
 
 rf = 0.0001
 tau = 0.025         
+
+excludedStocks =  ['GOOG','AVGO','BRCM','CHTR','CMCSK','DISCK','FB','GMCR','KHC','LMCA','LVNTA','SNDK','TSLA','TRIP','VRSK','WBA']
    
-benchmarkValue = GetBenchmarkPortfolio(benchmark,quandlKey,startDate,endDate)
+pt = Portfolios(startDate,endDate,histWindow,rebalanceFrequency)
+
+h,portValue,mu,stocks = pt.GetOptimalPortfolio(excludedStocks)
+benchmarkValue = pt.GetBenchmarkPortfolio(benchmark,quandlKey)
+
 # Risk aversion of the market 
 delta = (252*numpy.mean(benchmarkValue.pct_change().dropna())-rf)/(math.sqrt(252)*numpy.std(benchmarkValue.pct_change().dropna()))
 delta = delta[0]
-portValue,portBLValue,h,hBL = GetOptimalPortfolio(benchmark,
-                                                  startDate,
-                                                  endDate,
-                                                  histWindow,
-                                                  rebalanceFrequency,
-                                                  tau,
-                                                  stockView,
-                                                  stockViewReturn,
-                                                  stockConfidence,
-                                                  delta)
 
+hBL,portBLValue = pt.GetBLPortfolio(stockView,stockViewReturn,stockConfidence,tau,delta,excludedStocks)
 
 portValue.columns = ['OptimalPort']
 portBLValue.columns = ['BlackLittermanPort'] 
@@ -88,4 +95,12 @@ ben, = plt.plot(dfClean['Index Value'],'b',label='Benchmark')
 plt.legend(handles=[port,portBL,ben])
 
 plt.show()
+
+PortRets = dfClean.pct_change().dropna()
+PortRets = PortRets.tz_localize('UTC')
+PortRets=PortRets.rename(columns = {'Index Value':'Benchmark'})
+horizon=1
+
+pa = PortfolioAnalysis(PortRets["OptimalPort"],PortRets["Benchmark"], horizon)
+pa.RunAnalysis()
 

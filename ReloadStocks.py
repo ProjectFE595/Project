@@ -2,7 +2,8 @@
 """
 Created on Sat Sep 24 02:59:10 2016
 
-@author: Hugo
+@author: Hugo Fallourd, Dakota Wixom, Yun Chen, Sanket Sojitra, Sanjana Cheerla, Wanting Mao, Chay Pimmanrojnagool, Teng Fei
+
 """
 from pymongo import MongoClient
 
