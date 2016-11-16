@@ -22,12 +22,11 @@ warnings.filterwarnings('ignore')
 
 class Predictor(object):
     
-    def __init__(self,s,dt,h,tis):
+    def __init__(self,s,dt,h,tis,db):
         self.stock=s
         self.date=dt
         self.horizon=h
-        client = MongoClient()
-        self.db = client.Project         
+        self.db=db  
         self.TIs=self.GetBestPredictors(s,h)       
         
     def GetMLInputs(self,data,headers):
@@ -160,7 +159,7 @@ class Predictor(object):
         """
         Download the analytics TIs data from Mongo
         """
-        mg = MongoDataGetter(sDate='2008-01-05')
+        mg = MongoDataGetter(self.db,sDate='2008-01-05')
         dataMongo = mg.GetDataFromMongo(self.stock,'TIs')
         
         headers = dataMongo[0]
@@ -208,7 +207,7 @@ class Predictor(object):
     
     def GetExhaustivePredictors(self,s,TIs):
         
-        mg = MongoDataGetter(sDate='2002-01-04',eDate='')
+        mg = MongoDataGetter(self.db,sDate='2002-01-04',eDate='')
         dataMongo = mg.GetDataFromMongo(s,'TIs')  
         
         headers = dataMongo[0]

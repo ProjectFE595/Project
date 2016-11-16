@@ -11,11 +11,10 @@ from DataHandler import DataHandler
 
 class MongoDataGetter(object):
     
-    def __init__(self, sDate='', eDate=''):
+    def __init__(self, db, sDate='', eDate=''):
         self.startDate=sDate
         self.endDate=eDate
-        client = MongoClient()
-        self.db = client.Project     
+        self.db = db    
                 
     def GetDataFromMongo(self,stock,dataType):
         

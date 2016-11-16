@@ -13,16 +13,19 @@ from ReloadStocks import ReloadStocks
 
 class PricesLoading(object):
     
-    def __init__(self,apiKey,date=''):
+    def __init__(self,apiKey,db,date=''):
         self.apiKey=apiKey
-        client = MongoClient()
-        self.db = client.Project
+        self.db=db
         
     def AdjustDataFormat(self,df,stock):
 
         df['Dates'] = df.index.values
         df['Dates'] = df['Dates'].apply(lambda x: x.strftime('%Y-%m-%d'))
         df = df[:][(df['Close']>0)]
+        df = df[:][(df['Open']>0)]
+        df = df[:][(df['High']>0)]
+        df = df[:][(df['Low']>0)]       
+        df = df.dropna(how='any')
         
         dates = list(df['Dates'])
         
@@ -71,7 +74,7 @@ class PricesLoading(object):
     def LoadPricesInMongo(self):
        
         quandlIDDict = list(self.db.Stocks.find({},{"QuandlID":1,"BBGTicker":1,"Name":1,"_id":0}))
-            
+
         for s in quandlIDDict:
             self.db.HistPrices.delete_many({'BBGTicker':s['BBGTicker']})
     

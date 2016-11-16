@@ -18,13 +18,12 @@ from BlackLitterman import altblacklitterman
 
 class Portfolios(object):
     
-    def __init__(self,sDate,eDate,window,rebalance):
+    def __init__(self,sDate,eDate,window,rebalance,db):
         self.startDate = sDate
         self.endDate = eDate
         self.window=window
         self.rebalanceFrequency=rebalance
-        client = MongoClient()
-        self.db = client.Project
+        self.db=db
         
     def GetBenchmarkPortfolio(self,benchmark,apiKey):
         quandl.ApiConfig.api_key = apiKey
@@ -162,7 +161,7 @@ class Portfolios(object):
         
         for stock in stocks:
             dfHeaders.append(stock+' Close')
-            mg = MongoDataGetter(self.startDate,self.endDate)
+            mg = MongoDataGetter(self.db, self.startDate,self.endDate)
             data = mg.GetDataFromMongo(stock,'Prices')
             headers = data[0]
             temp = data[1:]

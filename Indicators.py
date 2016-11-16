@@ -16,11 +16,10 @@ from DataHandler import DataHandler
 
 class Indicators(object):
 
-    def __init__(self, sDate='', eDate=''):
+    def __init__(self, db, sDate='', eDate=''):
         self.startDate=sDate
         self.endDate=eDate
-        client = MongoClient()
-        self.db = client.Project        
+        self.db = db       
         
                 
     def PopulateHeaders(self,headers):
@@ -73,7 +72,7 @@ class Indicators(object):
         for s in stocks:
             
             print(s)
-            mg = MongoDataGetter()
+            mg = MongoDataGetter(self.db)
             dataMongo = mg.GetDataFromMongo(s,'Prices')
             
             headers = dataMongo[0]

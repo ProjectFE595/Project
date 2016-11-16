@@ -12,6 +12,7 @@ from Indicators import Indicators
 from Portfolios import Portfolios
 from Predictor import Predictor
 import matplotlib.pyplot as plt
+from pymongo import MongoClient
 import pandas
 import numpy
 import math
@@ -22,20 +23,27 @@ today = '2016-09-29'
 quandlKey="vXqo1CSCZ6a7eESaKXEu"
 benchmark='NASDAQOMX/NDX'
 
-p=PricesLoading(quandlKey)
+hostc='localhost'
+#hostc='155.246.104.19'
+portn = 27017
+
+client = MongoClient(host=hostc, port=portn)
+db = client.Project 
+
+p=PricesLoading(quandlKey,db)
 #p.LoadPricesInMongo()
-i = Indicators()
-#i.CalculateIndicators()
+i = Indicators(db)
+i.CalculateIndicators()
 
 date='2010-02-05'
 horizon=20
 
 TIs=['KAMA','MACDHIST','CCI','RSI','WILLIAMR','MFI','EMA','ROC','STOCHSLOWD','ADX']
 
-prY = Predictor('YHOO',date,horizon,TIs)
-prC = Predictor('CSCO',date,horizon,TIs)
-prA = Predictor('AAPL',date,horizon,TIs)
-prG = Predictor('GOOGL',date,horizon,TIs)
+prY = Predictor('YHOO',date,horizon,TIs,db)
+prC = Predictor('CSCO',date,horizon,TIs,db)
+prA = Predictor('AAPL',date,horizon,TIs,db)
+prG = Predictor('GOOGL',date,horizon,TIs,db)
 
 ErYHOO,pYHOO = prY.GetReturnPredictions()
 ErCSCO,pCSCO = prC.GetReturnPredictions()
@@ -66,7 +74,7 @@ tau = 0.025
 
 excludedStocks =  ['GOOG','AVGO','BRCM','CHTR','CMCSK','DISCK','FB','GMCR','KHC','LMCA','LVNTA','SNDK','TSLA','TRIP','VRSK','WBA']
    
-pt = Portfolios(startDate,endDate,histWindow,rebalanceFrequency)
+pt = Portfolios(startDate,endDate,histWindow,rebalanceFrequency,db)
 
 h,portValue,mu,stocks = pt.GetOptimalPortfolio(excludedStocks)
 benchmarkValue = pt.GetBenchmarkPortfolio(benchmark,quandlKey)
