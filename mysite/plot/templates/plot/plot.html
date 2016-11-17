@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Outcome</title>
+    {% load static %}
+	<link rel="stylesheet" type="text/css" href="{% static 'interface/style.css' %}" />
+	
+	<script src="http://c3js.org/js/d3-3.5.6.min-77adef17.js"></script>
+    <link  rel="stylesheet" href="http://c3js.org/css/c3-b03125fa.css" />
+    <script  src="http://c3js.org/js/c3.min-4c5bef8f.js"></script>
+	
+    <script type="text/javascript">
+	OptimalPort = JSON.stringify({{ OptimalPort }});
+	OptimalPort = JSON.parse(OptimalPort);
+	BlackLittermanPort = JSON.stringify({{ BlackLittermanPort }});
+	BlackLittermanPort = JSON.parse(BlackLittermanPort);
+	Benchmark = JSON.stringify({{ Benchmark }});
+	Benchmark = JSON.parse(Benchmark);
+	Dates = JSON.stringify({{ Dates }});
+	Dates = JSON.parse(Dates);
+	
+
+    </script>
+</head>
+	
+ 
+
+<body>
+    <noscript>Sorry, your browser does not support JavaScript!</noscript>
+	
+	<div id="chart"></div>
+	<div id="home_button" align = "center" >
+		<a href="../interface/" class="button">Go to home</a>
+	</div>
+	
+	
+	
+	
+	
+	
+	
+	<script>
+
+	
+	var DATA = {
+                
+                "BlackLitterman": BlackLittermanPort, 
+				"Optimal": OptimalPort,
+                "Benchmark": Benchmark,
+                "x": Dates,
+           };
+           
+
+	var chart = c3.generate({
+		size: {
+			height: 500
+		},
+		padding: {
+			top: 40,
+			right: 100,
+			bottom: 100,
+			left: 40,
+		},
+		
+		data: {
+       
+			json: {				
+				BlackLitterman: DATA.BlackLitterman,
+				Optimal: DATA.Optimal,
+				Benchmark: DATA.Benchmark,
+			},
+			
+		},
+		axis: {
+
+			x: {
+				type: 'category',
+				categories: DATA.x, 
+				tick: {
+					culling: {
+						max:70
+					}
+                }
+			}
+		},
+
+		zoom: {
+			enabled: true,
+			rescale: true
+		},
+		point: {
+			r: 1,
+		},
+		
+	});
+
+	
+
+	</script>
+	
+
+</body>
+</html>

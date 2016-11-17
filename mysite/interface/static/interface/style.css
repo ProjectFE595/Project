@@ -1,0 +1,120 @@
+
+
+body {
+	padding: 20px;	
+	background: url(Elegant_Background-1.jpg);
+	background-size: 100% 100%;
+	background-attachment: fixed;
+	font-family: 'Oswald', sans-serif;
+	text-align: left;
+	color:   #33334d;
+}
+
+div {
+	padding: 20px;
+	border: 3px double #8585ad;
+	background: rgba(180, 204, 255, 0.5);
+	
+}
+h1 {
+	color:  #694088;
+	text-align: center;
+}
+
+caption {
+	font-size: 18pt;
+	text-align: left;
+}
+td {
+	padding: 20px;
+	vertical-align: top;
+}
+.narrow {
+	padding: 5px;
+}
+
+.hide-checkbox + label {
+display: block;
+float: left;
+width: 60px;
+padding: 3px;
+text-align: center;
+background-color: #8585ad;
+font-family: 'Oswald', sans-serif;
+color: #fff;
+-webkit-transition: background-color 0.1s ease-in-out;
+-moz-transition: background-color 0.1s ease-in-out;
+-o-transition: background-color 0.1s ease-in-out;
+transition: background-color 0.1s ease-in-out;
+}
+ 
+.hide-checkbox:checked + label {
+display: inline-block;
+background-color: #c61aff;
+}
+
+label:hover{
+	background-color: #9966ff;
+ }
+
+
+
+.button {
+    background-color: #0099cc;
+    border: 1px outset #8585ad;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+}
+.button:hover {
+   background-color: #9966ff;
+}
+
+.button0 {
+    background-color: #0099cc;
+    border: 1px outset #8585ad;
+    color: white;
+    padding: 2px 4px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 2px;
+    cursor: pointer;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+}
+.button0:hover {
+   background-color: #9966ff;
+}
+#userview {
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+#userview td, #userview th {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+
+
+#userview th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #694088;
+    color: white;
+}
+
+#chart .c3-line {
+	stroke-width: 2px;
+}
