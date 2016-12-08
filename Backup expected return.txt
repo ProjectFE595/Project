@@ -1,0 +1,26 @@
+        #Retrieve the dates for each adjustment close price or close price
+        dataMongo = self.db.Prices.find_one({'BBGTicker' : stock},{'Adj Close' : 1})
+        if 'Adj Close' not in list(dataMongo.keys()):
+            dataMongo = self.db.Prices.find_one({'BBGTicker' : stock},{'Close' : 1})
+            data=dataMongo['Close']
+        else:
+            data=dataMongo['Adj Close']
+        dates = sorted(data.keys())
+        
+        #Handle incorrect start and end date entered by user              
+        self.startDate = dh.HandleIncorrectDate(self.startDate,'',dates)
+        self.endDate = dh.HandleIncorrectDate('',self.endDate,dates)
+        dates = dates[dates.index(self.startDate):dates.index(self.endDate)]
+  
+        #Prediction must consider the window for covariance matrix
+        startDate = dates[k*self.rebalanceFreq + self.window]
+        pr = Predictor(stock,startDate,self.horizon,self.db)
+        
+        #Lookup output and features and
+        TIsDates = Xtot[stock]["DATES"]
+        Xtrain = Xtot[stock]["ANALYTICS"][:TIsDates.index(startDate)]
+        Ytrain = Ytot[stock]["RETURNS"][:TIsDates.index(startDate)]
+        Xpred = Xtot[stock]["ANALYTICS"][TIsDates.index(startDate)]
+        mu[st] = pr.PredictKNN(Xtrain,Ytrain,Xpred)/self.horizon
+        
+        st=st+1

@@ -10,70 +10,55 @@ import datetime
 from PricesLoading import PricesLoading
 from Indicators import Indicators
 from Portfolios import Portfolios
-from Predictor import Predictor
 import matplotlib.pyplot as plt
+from pymongo import MongoClient
 import pandas
 import numpy
 import math
 from PortfolioAnalysis import PortfolioAnalysis
-
+ 
 today = datetime.date.today()
 today = '2016-09-29'
 quandlKey="vXqo1CSCZ6a7eESaKXEu"
 benchmark='NASDAQOMX/NDX'
 
-p=PricesLoading(quandlKey)
+hostc='localhost'
+#hostc='155.246.104.19'
+portn = 27017
+
+client = MongoClient(host=hostc, port=portn)
+db = client.Project 
+
+p=PricesLoading(quandlKey,db)
 #p.LoadPricesInMongo()
-i = Indicators()
+i = Indicators(db)
 #i.CalculateIndicators()
 
-date='2010-02-05'
-horizon=20
+horizon=15
 
 TIs=['KAMA','MACDHIST','CCI','RSI','WILLIAMR','MFI','EMA','ROC','STOCHSLOWD','ADX']
 
-prY = Predictor('YHOO',date,horizon,TIs)
-prC = Predictor('CSCO',date,horizon,TIs)
-prA = Predictor('AAPL',date,horizon,TIs)
-prG = Predictor('GOOGL',date,horizon,TIs)
-
-ErYHOO,pYHOO = prY.GetReturnPredictions()
-ErCSCO,pCSCO = prC.GetReturnPredictions()
-ErAAPL,pAAPL = prA.GetReturnPredictions()
-ErGOOGL,pGOOGL = prG.GetReturnPredictions()
-
-print(ErYHOO) 
-print(ErCSCO)
-print(ErAAPL)
-print(ErGOOGL)
-
-print(pYHOO)
-print(pCSCO)
-print(pAAPL)
-print(pGOOGL)
-
-startDate='2010-02-05'
-endDate='2015-10-30'
+startDate='2012-02-08'
+endDate='2015-10-28'
 histWindow=120
-rebalanceFrequency=500
-
-stockView = ['YHOO','CSCO','AAPL','GOOGL']
-stockViewReturn = [ErYHOO,ErCSCO,ErAAPL,ErGOOGL]
-stockConfidence = [pYHOO,pCSCO,pAAPL,pGOOGL]
-
+rebalanceFrequency=10
 rf = 0.0001
 tau = 0.025         
 
 excludedStocks =  ['GOOG','AVGO','BRCM','CHTR','CMCSK','DISCK','FB','GMCR','KHC','LMCA','LVNTA','SNDK','TSLA','TRIP','VRSK','WBA']
    
-pt = Portfolios(startDate,endDate,histWindow,rebalanceFrequency)
+pt = Portfolios(startDate,endDate,histWindow,rebalanceFrequency,horizon,db)
 
 h,portValue,mu,stocks = pt.GetOptimalPortfolio(excludedStocks)
-benchmarkValue = pt.GetBenchmarkPortfolio(benchmark,quandlKey)
+benchmarkValue = pt.GetBenchmarkPortfolio(benchmark,quandlKey) 
 
 # Risk aversion of the market 
 delta = (252*numpy.mean(benchmarkValue.pct_change().dropna())-rf)/(math.sqrt(252)*numpy.std(benchmarkValue.pct_change().dropna()))
 delta = delta[0]
+
+stockView = ['YHOO','CSCO','AAPL','GOOGL']
+stockViewReturn = [0.3,0.2,-0.05,0.1]
+stockConfidence = [0.5,0.7,0.3,0.6]
 
 hBL,portBLValue = pt.GetBLPortfolio(stockView,stockViewReturn,stockConfidence,tau,delta,excludedStocks)
 
@@ -84,6 +69,7 @@ dfConcatenate = pandas.concat([portValue,portBLValue,benchmarkValue], axis=1, jo
 init=dfConcatenate['Index Value'][0]
 dfConcatenate['Index Value']=dfConcatenate['Index Value']/init
 dfClean=dfConcatenate[['OptimalPort','BlackLittermanPort','Index Value']]
+
 
 #Plot benchmark and optimal portfolio
 plt.figure(figsize=(20,7))
@@ -102,5 +88,5 @@ PortRets=PortRets.rename(columns = {'Index Value':'Benchmark'})
 horizon=1
 
 pa = PortfolioAnalysis(PortRets["OptimalPort"],PortRets["Benchmark"], horizon)
-pa.RunAnalysis()
+#pa.RunAnalysis()
 

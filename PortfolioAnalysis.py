@@ -4,6 +4,7 @@ Created on Mon Nov 14 15:13:50 2016
 
 @author: Hugo Fallourd, Dakota Wixom, Yun Chen, Sanket Sojitra, Sanjana Cheerla, Wanting Mao, Chay Pimmanrojnagool, Teng Fei
 
+This file runs the portfolio analysis to display chart regarding risk management analytics
 """
 from scipy.stats import norm
 import math
@@ -18,13 +19,16 @@ from pyfolio.tears import (create_full_tear_sheet,
                            create_bayesian_tear_sheet)
                            
 class PortfolioAnalysis(object):
+    """Constructor"""
     def __init__(self, p, b, h):
         self.portfolio = p
         self.benchmark = b
         self.horizon = h
-        
+    
+    """Call Pyfolio function to calculate analytics and plot diagram"""
     def RunAnalysis(self):
         
+        #Pyfolio functions
         create_interesting_times_tear_sheet(self.portfolio,self.benchmark,return_fig=True)
         create_full_tear_sheet(self.portfolio, positions=None, transactions=None, market_data=None, benchmark_rets=self.benchmark, gross_lev=None, slippage=None, sector_mappings=None, bayesian=False, round_trips=False, hide_positions=False, cone_std=(1.0, 1.5, 2.0), bootstrap=False, unadjusted_returns=None, set_context=True)
 
@@ -39,7 +43,7 @@ class PortfolioAnalysis(object):
         valueAtRisk = norm.ppf(0.05, mu, std)
         return(round(100*valueAtRisk*math.sqrt(scale),2))
     
-    # Calculate n-day VAR
+    # Calculate n-day conditional VAR
     def CVAR(self,rets, scale=1):
         VAR = self.calcVar(rets, scale=1)/100
         CVAR = rets[rets <= VAR].mean()

@@ -4,6 +4,8 @@ Created on Sat Sep 24 02:59:10 2016
 
 @author: Hugo Fallourd, Dakota Wixom, Yun Chen, Sanket Sojitra, Sanjana Cheerla, Wanting Mao, Chay Pimmanrojnagool, Teng Fei
 
+This file simply hardcode the list of all available stocks we want to maintain
+in the mongo database
 """
 from pymongo import MongoClient
 
@@ -12,6 +14,7 @@ def ReloadStocks():
     db = client.Project
     
     db.Stocks.delete_many({})
+    db.Stocks.insert_many([{'QuandlID':'GOOG/NYSE_JNJ','BBGTicker':'JNJ', 'Name' :'Johnson and Johnson'}])
     db.Stocks.insert_many([{'QuandlID':'WIKI/FOXA','BBGTicker':'FOXA', 'Name' :'21ST CENTRY FOX A CM'}])
     db.Stocks.insert_many([{'QuandlID':'WIKI/FOX','BBGTicker':'FOX', 'Name' :'21ST CENTRY FOX B CM'}])
     db.Stocks.insert_many([{'QuandlID':'WIKI/ATVI','BBGTicker':'ATVI', 'Name' :'ACTIVISION BLIZZARD'}])
